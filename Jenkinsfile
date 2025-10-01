@@ -25,8 +25,10 @@ pipeline {
                 script {
                     if (isUnix()) {
                         sh 'mvn clean package -DskipTests'
+                        sh 'ls -l target'
                     } else {
                         bat 'mvn clean package -DskipTests'
+                        bat 'dir target'
                     }
                 }
             }
