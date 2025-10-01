@@ -2,18 +2,26 @@ pipeline {
     agent any
     tools{
         maven 'Maven3'
+
     }
 
     environment {
         PATH = "C:\\Program Files\\Docker\\Docker\\resources\\bin;${env.PATH}"
-
-            // Define Docker Hub credentials ID
         DOCKERHUB_CREDENTIALS_ID = 'Docker_Hub'
-        DOCKER_IMAGE = 'amirdirin/javafx-db'
+        DOCKER_IMAGE = 'amirdirin/javafx_with_db2'
         DOCKER_TAG = 'latest'
     }
 
     stages {
+        stage('Setup Maven') {
+            steps {
+                script {
+                    def mvnHome = tool name: 'Maven3', type: 'maven'
+                    env.PATH = "${mvnHome}/bin:${env.PATH}"
+                }
+            }
+        }
+
         stage('Checkout') {
             steps {
                 git branch: 'master', url: 'https://github.com/ADirin/javafx_with_mariadb.git'
@@ -25,10 +33,8 @@ pipeline {
                 script {
                     if (isUnix()) {
                         sh 'mvn clean package -DskipTests'
-                        sh 'ls -l target'
                     } else {
                         bat 'mvn clean package -DskipTests'
-                        bat 'dir target'
                     }
                 }
             }
@@ -38,22 +44,18 @@ pipeline {
             steps {
                 script {
                     if (isUnix()) {
-                        sh 'mvn clean test'
+                        sh 'mvn test'
                     } else {
-                        bat 'mvn clean test'
+                        bat 'mvn test'
                     }
                 }
             }
         }
 
-
-
-
-
         stage('Build Docker Image') {
             steps {
                 script {
-                   if (isUnix()) {
+                    if (isUnix()) {
                         sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
                     } else {
                         bat "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
@@ -65,19 +67,21 @@ pipeline {
         stage('Push Docker Image to Docker Hub') {
             steps {
                 script {
-                    docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials') {
-                        docker.image(DOCKER_IMAGE).push(DOCKER_TAG)
+                    docker.withRegistry('https://index.docker.io/v1/', env.DOCKERHUB_CREDENTIALS_ID) {
+                        docker.image("${DOCKER_IMAGE}:${DOCKER_TAG}").push()
                     }
                 }
             }
         }
-
     }
 
-    post {
-        always {
-            junit '**/target/surefire-reports/*.xml'
-            jacoco execPattern: '**/target/jacoco.exec'
-        }
+  post {
+    always {
+        junit(testResults: '**/target/surefire-reports/*.xml', allowEmptyResults: true)
+        jacoco(execPattern: '**/target/jacoco.exec', classPattern: '**/target/classes', sourcePattern: '**/src/main/java', inclusionPattern: '**/*.class', exclusionPattern: '')
     }
 }
+
+
+}
+
