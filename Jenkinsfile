@@ -45,11 +45,7 @@ pipeline {
         }
 
 
-        stage('Publish Test Results') {
-            steps {
-                junit '**/target/surefire-reports/*.xml'
-            }
-        }
+
 
 
         stage('Build Docker Image') {
