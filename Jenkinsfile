@@ -16,7 +16,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'master', url: 'https://github.com/ADirin/TimeCal.git'
+                git branch: 'master', url: 'https://github.com/ADirin/javafx_with_mariadb.git'
             }
         }
 
