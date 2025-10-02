@@ -4,8 +4,8 @@ import javafx.scene.control.Label;
 public class Database {
 
     private static final String URL = "jdbc:mysql://localhost:3306/javafx_mariadb";
-    private static final String USER = "root";
-    private static final String PASSWORD = "Test12";
+    private static final String USER = "tempuser";
+    private static final String PASSWORD = "password";
 
     public static void saveTemperature(double celsius, double fahrenheit, Label statusLabel) {
         String sql = "INSERT INTO temperature_log (celsius, fahrenheit) VALUES (?, ?)";
